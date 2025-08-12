@@ -12,6 +12,9 @@ This is a web-based application designed to measure your typing speed and accura
 - **Timer**: A 60-second countdown timer for each test.
 - **Responsive Design**: The application is designed to work on various screen sizes.
 - **Results Modal**: Displays your final WPM, accuracy, and character count after each test.
+- **Light & Dark Mode**: Switch between a light or dark theme for comfortable viewing.
+- **Dual Language Support**: Practice typing in either English or Indonesian.
+
 
 ## Technologies Used
 
