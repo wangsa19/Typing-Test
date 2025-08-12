@@ -1,4 +1,6 @@
-const texts = [
+// script.js
+
+const texts_en = [
   "The art of programming is the art of organizing complexity. Good code is its own best documentation. When you feel the need to write a comment, first try to refactor the code so that any comment becomes superfluous.",
   "Design is not just what it looks like and feels like. Design is how it works. The best way to find out if you can trust somebody is to trust them. Innovation distinguishes between a leader and a follower.",
   "The only way to do great work is to love what you do. Stay hungry, stay foolish. Your work is going to fill a large part of your life, and the only way to be truly satisfied is to do what you believe is great work.",
@@ -7,6 +9,16 @@ const texts = [
   "The future belongs to those who believe in the beauty of their dreams. Success is not final, failure is not fatal, it is the courage to continue that counts.",
 ];
 
+const texts_id = [
+  "Pendidikan adalah senjata paling ampuh yang bisa Anda gunakan untuk mengubah dunia. Jangan pernah berhenti belajar karena hidup tidak pernah berhenti mengajarkan.",
+  "Setiap pagi di Afrika, seekor kijang bangun. Ia tahu ia harus berlari lebih cepat dari singa tercepat atau ia akan terbunuh. Setiap pagi seekor singa bangun. Ia tahu ia harus berlari lebih cepat dari kijang terlambat atau ia akan kelaparan.",
+  "Untuk menjelajahi samudra baru, seseorang harus memiliki keberanian untuk melupakan pemandangan pantai. Keberanian bukanlah ketiadaan rasa takut, tetapi kemenangan atasnya.",
+  "Inovasi digital terus mengubah cara kita hidup, bekerja, dan berkomunikasi. Mengadopsi teknologi baru adalah kunci untuk tetap relevan di era modern yang serba cepat.",
+  "Waktu adalah sumber daya paling berharga yang tidak dapat diperbarui. Manfaatkan setiap detiknya untuk hal-hal yang berarti bagi pertumbuhan diri Anda dan orang lain.",
+  "Bekerja keras dalam keheningan, biarkan kesuksesan Anda yang membuat kebisingan. Integritas adalah melakukan hal yang benar, bahkan ketika tidak ada yang melihat.",
+];
+
+let currentLanguageTexts = texts_en;
 let currentText = "";
 let currentIndex = 0;
 let startTime = null;
@@ -16,6 +28,7 @@ let isActive = false;
 let errors = 0;
 let totalChars = 0;
 
+// Elemen DOM
 const textContent = document.getElementById("textContent");
 const typingInput = document.getElementById("typingInput");
 const startBtn = document.getElementById("startBtn");
@@ -28,10 +41,18 @@ const progressText = document.getElementById("progressText");
 const timerElement = document.getElementById("timer");
 const tryAgainBtn = document.getElementById("tryAgainBtn");
 const resultsModal = document.getElementById("resultsModal");
+const langEnBtn = document.getElementById("lang-en");
+const langIdBtn = document.getElementById("lang-id");
+const themeToggle = document.getElementById("theme-toggle");
+const body = document.body;
 
 function loadNewText() {
-  currentText = texts[Math.floor(Math.random() * texts.length)];
+  currentText =
+    currentLanguageTexts[
+      Math.floor(Math.random() * currentLanguageTexts.length)
+    ];
   displayText();
+  resetTest();
 }
 
 function displayText() {
@@ -51,6 +72,7 @@ function startTest() {
   typingInput.placeholder = "Start typing...";
   typingInput.focus();
   startBtn.style.display = "none";
+  resetBtn.style.display = "inline-flex";
   progressText.textContent = "Test in progress...";
   startTimer();
 }
@@ -59,7 +81,6 @@ function startTimer() {
   timer = setInterval(() => {
     timeleft--;
     timerElement.querySelector("span").textContent = timeleft;
-
     if (timeleft <= 0) {
       endTest();
     }
@@ -76,26 +97,27 @@ function handleInput(e) {
   updateStats();
   updateProgress();
 
-  if (currentIndex >= currentText.length) {
+  if (currentIndex === currentText.length) {
     endTest();
   }
 }
 
 function updateDisplay(inputValue) {
   const chars = document.querySelectorAll(".char");
-  errors = 0;
+  errors = 0; // Reset error di setiap input
   totalChars = currentIndex;
 
   chars.forEach((char, index) => {
-    char.className = "char";
+    char.className = "char"; // Reset class
 
     if (index < inputValue.length) {
       if (inputValue[index] === currentText[index]) {
         char.classList.add("correct");
       } else {
         char.classList.add("incorrect");
+        errors++; // FIX: Tambahkan jumlah error jika salah
       }
-    } else if (index === inputValue.length && index < currentIndex.length) {
+    } else if (index === inputValue.length) {
       char.classList.add("current");
     } else {
       char.classList.add("pending");
@@ -105,6 +127,8 @@ function updateDisplay(inputValue) {
 
 function updateStats() {
   const timeElapsed = (Date.now() - startTime) / 1000 / 60;
+  if (timeElapsed === 0) return;
+
   const grossWPM = currentIndex / 5 / timeElapsed;
   const netWPM = Math.max(0, Math.round(grossWPM - errors / timeElapsed));
   const accuracy =
@@ -118,7 +142,7 @@ function updateStats() {
 }
 
 function updateProgress() {
-  const progress = (currentIndex / currentText.length) * 100
+  const progress = (currentIndex / currentText.length) * 100;
   progressFill.style.width = `${Math.min(progress, 100)}%`;
   if (progress >= 100) {
     progressText.textContent = "Completed!";
@@ -131,20 +155,16 @@ function endTest() {
   isActive = false;
   typingInput.disabled = true;
   clearInterval(timer);
-
   updateStats();
   showResults();
 }
 
 function showResults() {
-  const finalWPM = wpmElement.textContent;
-  const finalAccuracy = accuracyElement.textContent;
-  const finalCharacters = charactersElement.textContent;
-
-  document.getElementById("finalWPM").textContent = finalWPM;
-  document.getElementById("finalAccuracy").textContent = finalAccuracy;
-  document.getElementById("finalCharacters").textContent = finalCharacters;
-
+  document.getElementById("finalWPM").textContent = wpmElement.textContent;
+  document.getElementById("finalAccuracy").textContent =
+    accuracyElement.textContent;
+  document.getElementById("finalCharacters").textContent =
+    charactersElement.textContent;
   resultsModal.classList.add("show");
 }
 
@@ -161,31 +181,65 @@ function resetTest() {
   typingInput.value = "";
   typingInput.disabled = true;
   typingInput.placeholder = "Click start to begin typing...";
-  typingInput.style.display = "inline-flex";
   timerElement.querySelector("span").textContent = timeleft;
   progressText.textContent = "Ready to Start";
 
-  wpmElement.textContent = '0';
-  accuracyElement.textContent = '100';
-  charactersElement.textContent = '0';
+  wpmElement.textContent = "0";
+  accuracyElement.textContent = "100";
+  charactersElement.textContent = "0";
   progressFill.style.width = "0%";
 
-  loadNewText();
-  resultsModal.classList.remove("show");
   startBtn.style.display = "inline-flex";
+  resultsModal.classList.remove("show");
+
+  // FIX: Jangan panggil loadNewText() di sini untuk menghindari loop
+  displayText(); // Cukup tampilkan teks yang sudah dimuat
 }
 
 function closeResults() {
   resultsModal.classList.remove("show");
-  resetTest();
+  loadNewText(); // Muat teks baru setelah menutup hasil
 }
 
-startBtn.addEventListener('click', startTest);
-resetBtn.addEventListener('click', resetTest);
-typingInput.addEventListener('input', handleInput);
-typingInput.addEventListener('paste', (e) => e.preventDefault());
-tryAgainBtn.addEventListener('click', closeResults);
+function toggleTheme() {
+  body.classList.toggle("light-mode");
+  const isLightMode = body.classList.contains("light-mode");
+  localStorage.setItem("theme", isLightMode ? "light" : "dark");
+  themeToggle.innerHTML = isLightMode
+    ? '<i class="fas fa-moon"></i>'
+    : '<i class="fas fa-sun"></i>';
+}
 
+// Event Listeners
+langEnBtn.addEventListener("click", () => {
+  currentLanguageTexts = texts_en;
+  langEnBtn.classList.add("active");
+  langIdBtn.classList.remove("active");
+  loadNewText();
+});
+
+langIdBtn.addEventListener("click", () => {
+  currentLanguageTexts = texts_id;
+  langIdBtn.classList.add("active");
+  langEnBtn.classList.remove("active");
+  loadNewText();
+});
+
+startBtn.addEventListener("click", startTest);
+resetBtn.addEventListener("click", loadNewText);
+typingInput.addEventListener("input", handleInput);
+typingInput.addEventListener("paste", (e) => e.preventDefault());
+tryAgainBtn.addEventListener("click", closeResults);
+themeToggle.addEventListener("click", toggleTheme);
+
+// FIX: Gabungkan listener menjadi satu
 document.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "light") {
+    body.classList.add("light-mode");
+    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+  } else {
+    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+  }
   loadNewText();
 });
